@@ -4,7 +4,7 @@ import { useAreas } from '../hooks/useAreas';
 
 const ApiContext = createContext();
 
-const API_URL = 'https://espike-backend.onrender.com';
+const API_URL = 'https://espike-backend.onrender.com/api';
 
 export const ApiProvider = ({ children }) => {
   const occurrences = useOccurrences();
