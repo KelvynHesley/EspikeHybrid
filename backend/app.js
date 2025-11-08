@@ -15,11 +15,7 @@ dotenv.config();
 
 const app = express();
 
-// Configuração do CORS
-app.use(cors({
-    origin: 'http://localhost:8081',
-    credentials: true,
-}));
+app.use(corsConfig);
 
 // Middleware para interpretar JSON
 app.use(express.json());
