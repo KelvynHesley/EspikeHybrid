@@ -10,6 +10,7 @@ const { authenticate } = require('./middleware/authenticate');
 const occurrenceRoutes = require('./controller/OcurrenceController');
 const areaRoutes = require('./controller/AreaController');
 const markerRoutes = require('./controller/MarkerController');
+const corsConfig = require('./config/CorsConfig');
 
 dotenv.config();
 
