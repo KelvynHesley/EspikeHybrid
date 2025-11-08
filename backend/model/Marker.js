@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const markerSchema = new mongoose.Schema({
     ocurrenceId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Ocurrence', // Certifique-se de que "Ocurrence" é o nome correto do modelo
+        ref: 'Ocurrence', 
         required: true,
     },
     latitude: {
