@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Certifique-se de que este caminho está correto
 const { authenticate } = require('../middleware/authenticate');
-const UserService = require('../service/userService');
+const UserService = require('../service/UserService');
 
 // Atualizar usuário por email
 router.put('/email/:email', async (req, res) => {
