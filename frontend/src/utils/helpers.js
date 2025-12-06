@@ -1,3 +1,13 @@
+const escapeHtml = (text) => {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 export const TYPE_CONFIG = {
   Crime: { color: "#ff4444", weight: 3 },
   Acidente: { color: "#ffaa00", weight: 2 },
@@ -11,27 +21,58 @@ export const getRatingColor = (rating) => {
   return "#F44336";
 };
 
-export const generateWebViewHtml = ({ markers = [], userLocation = { lat: -23.55, lng: -46.63 }, areas = [] }) => {
-  const markersJs = markers.map(m => {
-    const col = m.type === "Crime" ? "#ff4444" : m.type === "Acidente" ? "#ffaa00" : "#44aa44";
-    const weight = m.type === "Crime" ? 3 : m.type === "Acidente" ? 2 : 1;
-    const radius = 120 * weight;
-    return `
+export const generateWebViewHtml = ({
+  markers = [],
+  userLocation = { lat: -23.55, lng: -46.63 },
+  areas = [],
+}) => {
+  const markersJs = markers
+    .map((m) => {
+      const col =
+        m.type === "Crime"
+          ? "#ff4444"
+          : m.type === "Acidente"
+          ? "#ffaa00"
+          : "#44aa44";
+      const weight = m.type === "Crime" ? 3 : m.type === "Acidente" ? 2 : 1;
+      const radius = 120 * weight;
+      return `
       (function(){
-        var ic = L.divIcon({ className:'marker-wrapper', html:'<div class="custom-dot ${m.type==="Crime"?"dot-crime":m.type==="Acidente"?"dot-acidente":"dot-outro"}" style="color:${col}"></div><div class="pulse" style="color:${col}"></div>', iconSize:[24,24], iconAnchor:[12,12] });
-        var mm = L.marker([${m.coordinate.lat}, ${m.coordinate.lng}], {icon: ic}).addTo(map).bindPopup(${JSON.stringify(`<b>${m.type}</b><br/>${m.description}`)});
-        var c = L.circle([${m.coordinate.lat}, ${m.coordinate.lng}], { radius: ${radius}, color: '${col}', fillColor: '${col}', fillOpacity: 0.12, weight:0 }).addTo(map);
+        var ic = L.divIcon({ className:'marker-wrapper', html:'<div class="custom-dot ${
+          m.type === "Crime"
+            ? "dot-crime"
+            : m.type === "Acidente"
+            ? "dot-acidente"
+            : "dot-outro"
+        }" style="color:${col}"></div><div class="pulse" style="color:${col}"></div>', iconSize:[24,24], iconAnchor:[12,12] });
+        var mm = L.marker([${m.coordinate.lat}, ${
+        m.coordinate.lng
+      }], {icon: ic}).addTo(map).bindPopup('<b>' + m.type + '</b><br/>' + '${escapeHtml(
+        m.description
+      )}');
+        var c = L.circle([${m.coordinate.lat}, ${
+        m.coordinate.lng
+      }], { radius: ${radius}, color: '${col}', fillColor: '${col}', fillOpacity: 0.12, weight:0 }).addTo(map);
         window.__circles = window.__circles || [];
         window.__circles.push(c);
       })();
     `;
-  }).join("\n");
+    })
+    .join("\n");
 
-  const areasJs = areas.map(area => {
-    const rating = area.ratings?.overall || 0;
-    const color = rating >= 4 ? "#4CAF50" : rating >= 3 ? "#FFC107" : rating >= 2 ? "#FF9800" : "#F44336";
-    
-    return `
+  const areasJs = areas
+    .map((area) => {
+      const rating = area.ratings?.overall || 0;
+      const color =
+        rating >= 4
+          ? "#4CAF50"
+          : rating >= 3
+          ? "#FFC107"
+          : rating >= 2
+          ? "#FF9800"
+          : "#F44336";
+
+      return `
       (function(){
         var polygon = L.polygon(${JSON.stringify(area.coordinates)}, {
           fillColor: '${color}',
@@ -51,7 +92,8 @@ export const generateWebViewHtml = ({ markers = [], userLocation = { lat: -23.55
         polygon.bindPopup('<b>${area.name}</b><br/>Avaliação: ${rating}/5');
       })();
     `;
-  }).join("\n");
+    })
+    .join("\n");
 
   return `
   <!doctype html><html><head>

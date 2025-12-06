@@ -1,4 +1,5 @@
-import { API_CONFIG, REQUEST_TIMEOUT } from '../utils/constants';
+import { API_CONFIG, REQUEST_TIMEOUT } from "../utils/constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 class ApiService {
   constructor() {
@@ -9,7 +10,7 @@ class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     const config = {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
       timeout: REQUEST_TIMEOUT,
@@ -18,14 +19,14 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
     } catch (error) {
-      console.error('API Request failed:', error);
+      console.error("API Request failed:", error);
       throw error;
     }
   }
@@ -36,21 +37,21 @@ class ApiService {
 
   post(endpoint, data) {
     return this.request(endpoint, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   put(endpoint, data) {
     return this.request(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   delete(endpoint) {
     return this.request(endpoint, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 }

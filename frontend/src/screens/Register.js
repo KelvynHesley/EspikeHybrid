@@ -1,7 +1,18 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { apiService } from "../services/api";
+import { API_CONFIG } from "../utils/constants";
 
-export default function Register() {
+export default function Register({ navigation }) {
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -13,6 +24,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [aceitouTermos, setAceitouTermos] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
     let newErrors = {};
@@ -60,15 +72,36 @@ export default function Register() {
     return valid;
   };
 
-  const handleRegister = () => {
-    if (validateForm()) {
-      Alert.alert("Sucesso", "Usuário registrado (mock)");
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      // Envia os dados para a rota de criação de usuário (ajuste a rota '/users' conforme seu backend)
+      await apiService.post(API_CONFIG.ENDPOINTS.REGISTER, user);
+
+      Alert.alert(
+        "Sucesso",
+        "Conta criada com sucesso! Faça login para continuar.",
+        [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+      );
+    } catch (error) {
+      console.error(error); // Para ajudar no debug
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Ocorreu um erro ao registrar.";
+      Alert.alert("Erro", errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Insira os seus dados {"\n"} nos campos abaixo:</Text>
+      <Text style={styles.title}>
+        Insira os seus dados {"\n"} nos campos abaixo:
+      </Text>
 
       {/* Inputs */}
       <TextInput
@@ -76,6 +109,7 @@ export default function Register() {
         placeholder="Nome"
         value={user.name}
         onChangeText={(text) => setUser({ ...user, name: text })}
+        editable={!loading}
       />
       {errors.name && <Text style={styles.error}>{errors.name}</Text>}
 
@@ -84,6 +118,9 @@ export default function Register() {
         placeholder="Email"
         value={user.email}
         onChangeText={(text) => setUser({ ...user, email: text })}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        editable={!loading}
       />
       {errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
@@ -93,6 +130,7 @@ export default function Register() {
         keyboardType="phone-pad"
         value={user.phone}
         onChangeText={(text) => setUser({ ...user, phone: text })}
+        editable={!loading}
       />
       {errors.phone && <Text style={styles.error}>{errors.phone}</Text>}
 
@@ -101,6 +139,8 @@ export default function Register() {
         placeholder="CPF"
         value={user.cpf}
         onChangeText={(text) => setUser({ ...user, cpf: text })}
+        keyboardType="numeric"
+        editable={!loading}
       />
       {errors.cpf && <Text style={styles.error}>{errors.cpf}</Text>}
 
@@ -110,6 +150,7 @@ export default function Register() {
         secureTextEntry
         value={user.password}
         onChangeText={(text) => setUser({ ...user, password: text })}
+        editable={!loading}
       />
       {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
@@ -119,11 +160,16 @@ export default function Register() {
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        editable={!loading}
       />
-      {errors.confirmPassword && <Text style={styles.error}>{errors.confirmPassword}</Text>}
+      {errors.confirmPassword && (
+        <Text style={styles.error}>{errors.confirmPassword}</Text>
+      )}
 
       {/* Termos */}
-      <TouchableOpacity onPress={() => setAceitouTermos(!aceitouTermos)}>
+      <TouchableOpacity
+        onPress={() => !loading && setAceitouTermos(!aceitouTermos)}
+      >
         <Text style={[styles.checkbox, aceitouTermos && styles.checked]}>
           {aceitouTermos ? "☑" : "☐"} Aceito os termos de uso (obrigatório)
         </Text>
@@ -132,11 +178,15 @@ export default function Register() {
 
       {/* Botão */}
       <TouchableOpacity
-        style={[styles.button, (!aceitouTermos) && styles.disabled]}
+        style={[styles.button, (!aceitouTermos || loading) && styles.disabled]}
         onPress={handleRegister}
-        disabled={!aceitouTermos}
+        disabled={!aceitouTermos || loading}
       >
-        <Text style={styles.buttonText}>Avançar</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Avançar</Text>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.footer}>© 2024 - Todos os direitos reservados</Text>
@@ -166,10 +216,12 @@ const styles = StyleSheet.create({
   error: {
     color: "red",
     marginBottom: 10,
+    fontSize: 12,
   },
   checkbox: {
     marginTop: 10,
     color: "red",
+    marginBottom: 5,
   },
   checked: {
     color: "green",
@@ -180,6 +232,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: "center",
     marginTop: 20,
+    height: 50,
+    justifyContent: "center",
   },
   disabled: {
     backgroundColor: "#aaa",
@@ -187,6 +241,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
   },
   footer: {
     marginTop: 30,
